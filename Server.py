@@ -19,7 +19,7 @@ class ThreadedServer(object):
         while self.running:
             client, address = self.sock.accept()
             if self.running:
-                client.settimeout(60)
+                client.settimeout(None)
                 t = threading.Thread(target = self.client_func,args = (client,address))
                 t.daemon = True
                 t.start()
