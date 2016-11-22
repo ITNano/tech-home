@@ -34,7 +34,6 @@ def handle_network_msg(connection, msg):
         print(msg)
 
 def handle(text, mic, profile):
-    print("Activated on "+text)
     if not conn.is_connected():
         print("Reconnecting")
         conn.connect()
@@ -49,11 +48,12 @@ def handle(text, mic, profile):
     elif 'WATCH' in text:
         response = text.replace('WATCH', '').strip(' ')
         
-    print("response: '"+response+"'")
     if "NEXT" in response:
         series = response.replace('NEXT', '').strip(' ')
         conn.send('start series ' + series + '#.#next')
         handle_started_media(mic, profile)
+    elif response == "CLOSE":
+        conn.send('close')
     else:
         for series in conn.media_dict.get("series", []):
             if response == series:
@@ -76,14 +76,8 @@ def handle(text, mic, profile):
         handle_started_media(mic, profile)
     
 def handle_started_media(mic, profile):
-    wfr = wait_for_response()
-    print(str(wfr))
-    if wfr == FAILED_TO_PLAY:
-        mic.say("Could not find what you wanted. Try again?")
-        if mic.activeListen() == 'YES':
-            handle('MOVIES', mic, profile)
-        else:
-            mic.say("Okay. Aborting.")
+    if wait_for_response() == FAILED_TO_PLAY:
+        mic.say("Could not find what you wanted.")
     
 def wait_for_response():
     conn.cmd_status = None
@@ -143,6 +137,6 @@ NO_INFORMATION = -2
 INVALID_INFORMATION = -3
 
 NUMBERS = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN', 'TWENTY']
-WORDS = ['MOVIE', 'MOVIES', 'SERIES', 'WATCH', 'NEXT', 'ABORT', 'YES', 'NO']
+WORDS = ['MOVIE', 'MOVIES', 'SERIES', 'WATCH', 'NEXT', 'ABORT', 'YES', 'NO', 'CLOSE']
 WORDS.extend(NUMBERS)
 WORDS.extend(get_movie_words())

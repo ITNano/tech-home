@@ -122,11 +122,7 @@ def start_episode(series, season, episode):
 # param subtitle_file: Absolute path to the subtitle file
 def run_vlc(movie_file, subtitle_file):
     global current_movie_proc
-    if current_movie_proc is not -1:
-        try:
-            current_movie_proc.terminate()
-        except:
-            print("Got some error when killing prev. process, assuming it's dead.")
+    close_player()
 
     params = ['vlc']
     print("Using movie : " + movie_file)
@@ -139,6 +135,14 @@ def run_vlc(movie_file, subtitle_file):
     params.append('--no-random')
     
     current_movie_proc = Popen(params)
+    
+# Closes VLC if previously started with any movie/series
+def close_player():
+    if current_movie_proc is not None:
+        try:
+            current_movie_proc.terminate()
+        except:
+            print("Got some error when killing prev. process, assuming it's dead.")
 
 # Locates the video file of an episode of a series
 # param series: The exact name of the series

@@ -14,6 +14,8 @@ def handle_command(msg):
         print("Want to show all movies on screen")
     elif cmd == "show series":
         print("Want to show all series on screen")
+    elif cmd == "close":
+        Movies.close_player()
     elif cmd[:13] == "start series ":
         data = cmd[13:].split("#.#")
         if len(data) == 2:
