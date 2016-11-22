@@ -7,7 +7,7 @@ import os.path
 def handle_command(msg):
     cmd = msg.get_message()
     if cmd == "get list all":
-        msg.reply(json.dumps({"movies":Movies.get_movie_list(), "series":Movies.get_series_list()}))
+        msg.reply("listall " + json.dumps({"movies":Movies.get_movie_list(), "series":Movies.get_series_list()}))
     elif cmd == "show all":
         print("Want to show all stuffs on screen")
     elif cmd == "show movies":
@@ -24,22 +24,28 @@ def handle_command(msg):
                 series = data[0]
                 (season, episode) = get_next_episode(series, increment=False)
             else:
-                msg.reply("Invalid syntax in the code. Contact system administrator")
+                msg.reply("start failed")
                 return
         elif len(data) == 3:
             series = data[0]
             season = int(data[1])
             episode = int(data[2])
         else:
-            msg.reply("Invalid syntax in the code. Contact system administrator")
+            msg.reply("start failed")
             return
         
         if Movies.start_episode(series, season, episode):
             watched_episode(series, season, episode)
+            msg.reply('start success')
+        else:
+            msg.reply('start failed')
     elif cmd[:12] == "start movie ":
         movie_name = Movies.start_movie(cmd[12:])
         if movie_name is not None:
             watched_movie(movie_name)
+            msg.reply('start success')
+        else:
+            msg.reply('start failed')
     else:
         msg.reply("Feature not implemented.")
         

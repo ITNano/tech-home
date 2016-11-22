@@ -17,6 +17,9 @@ class ClientConnection(object):
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.host, self.port))
         
+    def is_connected(self):
+        return self.sock is not None
+        
     def send(self, msg):
         if self.sock is not None:
             msg = ClientConnection.msg_start + msg
@@ -57,17 +60,16 @@ class ClientConnection(object):
         if self.sock is not None:
             self.sock.close()
             self.sock = None
-            
-
-def handle_read(conn, cmd):
-    print("Got response: "+cmd)
     
-client = ClientConnection('192.168.1.35', 63137)
-client.start_recv_thread(handle_read)
-while True:
-    data = input("> ")
-    if data == "exit":
-        client.close()
-        break
-    else:
-        client.send(data)
+if __name__ == "__main__":    
+    def handle_read(conn, cmd):
+        print("Got response: "+cmd)
+    client = ClientConnection('192.168.1.35', 63137)
+    client.start_recv_thread(handle_read)
+    while True:
+        data = input("> ")
+        if data == "exit":
+            client.close()
+            break
+        else:
+            client.send(data)
