@@ -1,6 +1,7 @@
 import socket
 import time
 import threading
+import sys
 
 class ClientConnection(object):
 
@@ -22,13 +23,17 @@ class ClientConnection(object):
         
     def send(self, msg):
         if self.sock is not None:
-            msg = ClientConnection.msg_start + msg
-            bytes_sent = 0
-            while bytes_sent < len(msg):
-                sent = self.sock.send(msg[bytes_sent:].encode('utf-8'))
-                if sent == 0:
-                    print("Warning: An error might have occured on send")
-                bytes_sent += sent
+            try:
+                msg = ClientConnection.msg_start + msg
+                bytes_sent = 0
+                while bytes_sent < len(msg):
+                    sent = self.sock.send(msg[bytes_sent:].encode('utf-8'))
+                    if sent == 0:
+                        print("Warning: An error might have occured on send")
+                    bytes_sent += sent
+            except:
+                print("Got a connection error, closing socket.")
+                self.close()
         else:
             print("Warning: Could not send since socket is closed.")
             
@@ -42,9 +47,10 @@ class ClientConnection(object):
                         if len(cmd) > 0:
                             recv_handler(self, cmd)
                 else:
-                    raise ConnectionResetError("Disconnected")
-            except ConnectionResetError:
-                self.stop_recv()
+                    raise Exception("Disconnected")
+            except:
+                print("Got a connection error, closing socket.")
+                self.close()
                 return False
                 
     def start_recv_thread(self, recv_handler):

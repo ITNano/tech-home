@@ -1,7 +1,7 @@
 from Subtitles import get_series_subtitle,get_movie_subtitle,get_two_digit_num
 import os
 import sys
-from subprocess import call
+from subprocess import Popen
 
 # ---------------------------- OVERALL DOCUMENTATION -------------------------- #
 # It is kind of hard to parse arbitrary movie and series names, especially if   #
@@ -31,6 +31,7 @@ from subprocess import call
 
 # Change this if needed.
 movies_folder = "G:"
+current_movie_proc = None
 
 # Retrieves a list of all available movies
 def get_movie_list():
@@ -120,6 +121,13 @@ def start_episode(series, season, episode):
 # param movie_file: Absolute path to the video file
 # param subtitle_file: Absolute path to the subtitle file
 def run_vlc(movie_file, subtitle_file):
+    global current_movie_proc
+    if current_movie_proc is not -1:
+        try:
+            current_movie_proc.terminate()
+        except:
+            print("Got some error when killing prev. process, assuming it's dead.")
+
     params = ['vlc']
     print("Using movie : " + movie_file)
     params.append("file:///"+movie_file)
@@ -130,7 +138,7 @@ def run_vlc(movie_file, subtitle_file):
     params.append('--playlist-autostart')
     params.append('--no-random')
     
-    call(params)
+    current_movie_proc = Popen(params)
 
 # Locates the video file of an episode of a series
 # param series: The exact name of the series
