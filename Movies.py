@@ -56,7 +56,7 @@ def get_seasons_of_serie(series):
     seasons = []
     for file in os.listdir(series_folder):
         if file.startswith('Season ') and os.path.isdir(os.path.join(series_folder, file)):
-            seasons.append(file[7:])
+            seasons.append(int(file[7:]))
     return seasons
     
 # Retrieves the amount of episodes in a specific season of a series
@@ -94,10 +94,13 @@ def is_series_folder(folder):
 def start_movie(movie):
     movie_file = find_movie_file(movie)
     if movie_file is not None:
-        subtitle_path = get_movie_subtitle(movie_file[movie_file.rfind("/")+1:movie_file.rfind('.')])
+        name = movie_file[movie_file.rfind("/")+1:movie_file.rfind('.')]
+        subtitle_path = get_movie_subtitle(name)
         run_vlc(movie_file, subtitle_path)
+        return name
     else:
         print("Movie not found")
+        return None
 
 # Starts the specified episode of the given series
 # param series: The exact name of the series
@@ -108,8 +111,10 @@ def start_episode(series, season, episode):
     if movie_file is not None:
         subtitle_path = get_series_subtitle(series, season, episode)
         run_vlc(movie_file, subtitle_path)
+        return True
     else:
         print("Series episode not found")
+        return False
     
 # Starts VLC with the given video and subtitle file
 # param movie_file: Absolute path to the video file
@@ -143,6 +148,10 @@ def find_series_file(series, season, episode):
             file = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f)) and keyword in f.upper()]
             if len(file) == 1:
                 return folder + "/" + file[0]
+            elif len(file) > 1:
+                for f in file:
+                    if f.count(get_two_digit_num(episode)) > 1:
+                        return folder + "/" + f
     except FileNotFoundError:
         print("Err: Series folder not found. Please place it at '"+folder+"'")
 

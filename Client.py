@@ -64,7 +64,10 @@ def handle_read(conn, cmd):
     
 client = ClientConnection('192.168.1.35', 63137)
 client.start_recv_thread(handle_read)
-client.send("hej")
-client.send("lel")
-time.sleep(5)
-client.close()
+while True:
+    data = input("> ")
+    if data == "exit":
+        client.close()
+        break
+    else:
+        client.send(data)
