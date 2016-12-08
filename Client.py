@@ -70,7 +70,11 @@ class ClientConnection(object):
 if __name__ == "__main__":    
     def handle_read(conn, cmd):
         print("Got response: "+cmd)
-    client = ClientConnection('192.168.1.35', 63137)
+        
+    port = 63137
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
+    client = ClientConnection('192.168.1.48', port)
     client.start_recv_thread(handle_read)
     while True:
         data = input("> ")
