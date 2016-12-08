@@ -89,9 +89,15 @@ def available_ip_addresses():
     
     return {'ipv4':ip_list, 'ipv6':ipv6_list}
     
-server = run_server(63137)
-while True:
-    data = input("Enter command to run: ")
-    if data == "exit":
-        server.stop_listen()
-        sys.exit(0)
+if __name__ == "__main__":
+    port = 63137
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
+    server = run_server(port)
+    while True:
+        data = input("Enter command to run: ")
+        if data == "exit":
+            server.stop_listen()
+            sys.exit(0)
+        else:
+            handle_command(NetworkMessage(None, data, '[MSG] '))
