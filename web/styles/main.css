@@ -32,7 +32,7 @@ body{
 }
 #navigation{
     position:absolute;
-    left:0px;
+    left:-201px;
     top:45px;
     width:200px;
     height:433px;                           /* Total height - activity_bar height */
