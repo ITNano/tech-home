@@ -39,6 +39,8 @@ body{
     z-index:100;
     background-color:#fff;
     border-right:1px solid #000;
+    
+    transition:left 0.7s ease;
 }
 #navigation ul{
     padding:0px;
