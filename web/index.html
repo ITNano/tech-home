@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Tech home</title>
+        <link rel = "stylesheet" type = "text/css" href = "styles/main.css" />
+        <script type = "text/javascript" src = "scripts/jquery.js"></script>
+        <script type = "text/javascript" src = "scripts/main.js"></script>
+    </head>
+    <body>
+        <div id = "content">
+            <div id = "activity_bar">
+                <img id = "menu_toggler" src = "imgs/menu_toggler.png" onclick = "toggleMenu();">
+                <div>Home page</div>
+            </div>
+            <div id = "navigation" onclick = "toggleMenu();">
+                <ul>
+                    <li><a href = "pages/bulbs.html" target = "page_viewer">Control bulbs</a></li>
+                    <li><a href = "pages/movies.html" target = "page_viewer">Movies & series</a></li>
+                    <li><a href = "pages/foodz.html" target = "page_viewer">Handle food</a></li>
+                </ul>
+            </div>
+            <iframe id = "page_viewer" name = "page_viewer" frameborder = "0"></iframe>
+        </div>
+        
+        <script type = "text/javascript">
+            function toggleMenu(){
+                var nav = $('#navigation');
+                if(nav.css('left') != '0px'){
+                    nav.css('left', '0px');
+                }else{
+                    nav.css('left', (-nav.width()*2)+'px');
+                }
+            }
+        </script>
+    </body>
+</html>

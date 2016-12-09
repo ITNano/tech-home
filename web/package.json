@@ -1,0 +1,29 @@
+{
+  "name": "tech-home",
+  "version": "0.0.0",
+  "description": "Web service for the tech-home platform.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ITNano/tech-home"
+  },
+  "keywords": [
+    "tech",
+    "home",
+    "cool",
+    "tech-home",
+    "wifi",
+    "rgb"
+  ],
+  "author": "Matz \"Nano\" Larsson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ITNano/tech-home/issues"
+  },
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}
