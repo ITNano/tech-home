@@ -1,6 +1,17 @@
 body{
     background-color:#000;
 }
+#black_container{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background-color:#000;
+    z-index:10001;
+    display:none;
+}
+
 #content{
     position:fixed;
     left:0px;
@@ -10,7 +21,7 @@ body{
     background-color:#fff;
 }
 #activity_bar{
-    height:24px;
+    height:48px;
     padding:10px 6px;
     border-bottom:2px solid #000;
 }
@@ -19,12 +30,13 @@ body{
     vertical-align:middle;
 }
 #activity_bar div{
-    margin-left:40%;
+    margin-left:30%;
     font-weight:bold;
+    font-size:30px;
 }
 #menu_toggler{
-    width:24px;
-    height:24px;
+    width:48px;
+    height:48px;
 }
 #menu_toggler:hover{
     cursor:hand;
@@ -33,9 +45,9 @@ body{
 #navigation{
     position:absolute;
     left:-201px;
-    top:45px;
+    top:69px;
     width:200px;
-    height:433px;                           /* Total height - activity_bar height */
+    height:409px;                           /* Total height - activity_bar height */
     z-index:100;
     background-color:#fff;
     border-right:1px solid #000;
@@ -53,10 +65,11 @@ body{
     width:160px;
     padding:14px 20px;
     text-decoration:none;
+    font-size:20px;
     color:#9b0676;
     border-bottom:1px dotted #9b0676;
 }
 #page_viewer{
     width:100%;
-    height:432px;                           /* Total height - activity_bar height */
+    height:408px;                           /* Total height - activity_bar height */
 }

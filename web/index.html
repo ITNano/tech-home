@@ -6,9 +6,10 @@
         <script type = "text/javascript" src = "scripts/main.js"></script>
     </head>
     <body onload = "$('#navigation ul li:nth(0) a').click();">
+        <div id = "black_container" onclick = "blackify(true);"></div>
         <div id = "content">
             <div id = "activity_bar">
-                <img id = "menu_toggler" src = "imgs/menu_toggler.png" onclick = "toggleMenu();">
+                <img id = "menu_toggler" src = "imgs/menu_toggler.png" onclick = "toggleMenu();return false;">
                 <div id = "page_name">Home page</div>
             </div>
             <div id = "navigation">
@@ -16,24 +17,44 @@
                     <li><a href = "pages/bulbs.html" target = "page_viewer" onclick = "activatedPage(this.innerHTML);">Control bulbs</a></li>
                     <li><a href = "pages/movies.html" target = "page_viewer" onclick = "activatedPage(this.innerHTML);">Movies & series</a></li>
                     <li><a href = "pages/foodz.html" target = "page_viewer" onclick = "activatedPage(this.innerHTML);">Handle food</a></li>
+                    <li><a href = "#" onclick = "blackify();">Blackout screen</a></li>
                 </ul>
             </div>
             <iframe src = "pages/bulbs.html" id = "page_viewer" name = "page_viewer" frameborder = "0"></iframe>
         </div>
         
         <script type = "text/javascript">
-            function toggleMenu(onlyClose){
+            function toggleMenu(){
+                console.log('toggle');
                 var nav = $('#navigation');
-                if(nav.css('left') != '0px' && !onlyClose){
-                    nav.css('left', '0px');
+                if(nav.css('left') != '0px'){
+                    openMenu();
                 }else{
-                    nav.css('left', (-nav.width()*2)+'px');
+                    closeMenu();
                 }
+            }
+            
+            function openMenu(){
+                $('#navigation').css('left', '0px');
+            }
+            
+            function closeMenu(){
+                console.log('close');
+                $('#navigation').css('left', (-$('#navigation').width()*2)+'px');
             }
             
             function activatedPage(page){
                 $('#page_name').html(page);
-                toggleMenu(true);
+                closeMenu(true);
+            }
+            
+            function blackify(off){ 
+                if(!off){
+                    $('#black_container').css('display', 'block');
+                    closeMenu();
+                }else{
+                    $('#black_container').css('display', 'none');
+                }
             }
         </script>
     </body>
