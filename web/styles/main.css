@@ -11,13 +11,35 @@ body{
     z-index:10001;
     display:none;
 }
+#clock{
+    position:fixed;
+    left:0;
+    top:0;
+    width:798px;
+    height:478px;
+    background-color:#fff;
+    z-index:9999;
+    display:none;
+    text-align:center;
+}
+#clock_date{
+    color:#aaa;
+    font-size:30px;
+    margin-top:125px;
+    margin-bottom:20px;
+}
+#clock_time{
+    vertical-align:middle;
+    font-size:64px;
+    color:#000;
+}
 
 #content{
     position:fixed;
     left:0px;
     top:0px;
     width:798px;
-    height:478;
+    height:478px;
     background-color:#fff;
 }
 #activity_bar{

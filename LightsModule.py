@@ -1,6 +1,7 @@
 from Client import ClientConnection
 import re
 from time import sleep
+import json
     
 operation_successful = None
 operation_wait_aborted = False
@@ -9,7 +10,8 @@ def handle_network_msg(connection, msg):
     global operation_successful
     print("Got message: "+msg)
     if not operation_wait_aborted:
-        if msg == 'success':
+        data = json.load(msg)
+        if data['status'] == 'success':
             operation_successful = True
         else:
             operation_successful = False

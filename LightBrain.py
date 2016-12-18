@@ -7,7 +7,9 @@ from time import sleep
 def handle_command(msg):
     cmd = msg.get_message()
     print("Got cmd : " + cmd)
-    if cmd == "get rooms":
+    if cmd == "get all states":
+        msg.reply(json.dumps(get_all_bulbs()))
+    elif cmd == "get rooms":
         msg.reply(json.dumps(rooms.keys()))
     elif cmd[:8] == "connect ":
         handle_response(msg, connect_to_bulb(get_bulb_by_name(cmd[8:])))
@@ -32,13 +34,14 @@ def handle_command(msg):
 def handle_response(msg, operation_success):
     if msg.sock is not None:
         if operation_success:
-            msg.reply('success')
+            msg.reply(json.dumps({'status':'success'}))
         else:
-            msg.reply('failure')
+            msg.reply(json.dumps({'status':'failure'}))
 
-def add_bulb(name):
+def add_bulb(name, canonical_name):
     bulb = {}
     bulb["name"] = name
+    bulb["canonical_name"] = canonical_name
     bulb["identifier"] = []
     for num in reversed([name[i:i+2] for i in range(3, len(name), 2)]):
         bulb["identifier"].append(int('0x'+num, 16))
@@ -46,6 +49,12 @@ def add_bulb(name):
     bulb["actual_color"] = None
     
     all_bulbs.append(bulb)
+    
+def get_all_bulbs():
+    bulbs = []
+    for bulb in all_bulbs:
+        bulbs.append({"name":bulb["name"], "canonical_name":bulb["canonical_name"], "color":bulb["color"], "active":bulb["color"]==bulb["actual_color"], "rooms":get_rooms_of_bulb(bulb)})
+    return bulbs
     
 def get_bulb_by_name(name):
     for bulb in all_bulbs:
@@ -63,6 +72,13 @@ def get_bulbs_by_names(names):
     
 def get_bulbs_by_room(room_name):
     return sorted(rooms.get(room_name, []), key=bulb_sort_order)
+    
+def get_rooms_of_bulb(bulb):
+    bulb_rooms = []
+    for (name, bulbs) in rooms.items():
+        if bulb in bulbs:
+            bulb_rooms.append(name)
+    return bulb_rooms
     
 def bulb_sort_order(bulb):
     return "" if bulb["name"] == get_current_connection() else bulb["name"]
@@ -119,9 +135,9 @@ def send_message(content, retransmits=3):
     
     
 all_bulbs = []
-add_bulb('CL_CFD4AA')
-add_bulb('CL_CFD4BA')
-add_bulb('CL_CFD4FA')
+add_bulb('CL_CFD4AA', 'Bedroom')
+add_bulb('CL_CFD4BA', 'Kitchen')
+add_bulb('CL_CFD4FA', 'Window')
 rooms = {"all":all_bulbs, "bedroom":[all_bulbs[0]], "living room":[all_bulbs[1], all_bulbs[2]]}
 
 init_lightwifi()

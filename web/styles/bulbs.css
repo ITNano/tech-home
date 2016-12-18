@@ -1,0 +1,75 @@
+.bulb{
+    margin-top:10px;
+    margin-bottom:15px;
+}
+.bulb_name{
+    display:inline-block;
+    margin-right:20px;
+}
+.toggle_button{
+    display:inline-block;
+    min-width:32px;
+    padding: 6px 10px;
+    border:1px solid #888;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    font-weight:bold;
+    text-align:center;
+}
+.toggle_button:hover{
+    cursor:hand;
+    cursor:pointer;
+}
+.preselected_colors{
+    display:inline-block;
+    margin-top:10px;
+}
+.preselected_colors_container{
+    display:inline-block;
+    width:400px;
+    min-height:64px;
+}
+.color_element{
+    position:relative;
+    float:left;
+    width:32px;
+    height:28px;
+    font-size:54px;
+    text-align:center;
+    margin-right:15px;
+    margin-bottom:8px;
+}
+.color_element:after {
+  content: " ";
+  position: absolute;
+  z-index: 1000;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  border: 1px solid #000000;
+}
+.color_element.active:not(.noncolor):after {
+  border: 3px solid #000000;
+}
+.color_element:not(.active):not(.noncolor):hover:after {
+  border: 3px solid #999;
+}
+.color_element.noncolor{
+    width:64px;
+    height:64px;
+    margin-bottom:0px;
+}
+.color_element.active:hover, .color_element.noncolor:hover{
+    cursor:not-allowed;
+}
+.color_element:not(.active):not(.noncolor):hover{
+    cursor:hand;
+    cursor:pointer;
+}
+.color_selector{
+    display:inline-block;
+    width:200px;
+    float:right;
+}

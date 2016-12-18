@@ -7,6 +7,10 @@
     </head>
     <body onload = "$('#navigation ul li:nth(0) a').click();">
         <div id = "black_container" onclick = "blackify(true);"></div>
+        <div id = "clock" onclick = "hideClock();">
+            <div id = "clock_date"></div>
+            <div id = "clock_time"></div>
+        </div>
         <div id = "content">
             <div id = "activity_bar">
                 <img id = "menu_toggler" src = "imgs/menu_toggler.png" onclick = "toggleMenu();return false;">
@@ -17,6 +21,7 @@
                     <li><a href = "pages/bulbs.html" target = "page_viewer" onclick = "activatedPage(this.innerHTML);">Control bulbs</a></li>
                     <li><a href = "pages/movies.html" target = "page_viewer" onclick = "activatedPage(this.innerHTML);">Movies & series</a></li>
                     <li><a href = "pages/foodz.html" target = "page_viewer" onclick = "activatedPage(this.innerHTML);">Handle food</a></li>
+                    <li><a href = "#" onclick = "showClock();">Show clock</a></li>
                     <li><a href = "#" onclick = "blackify();">Blackout screen</a></li>
                 </ul>
             </div>
@@ -24,14 +29,19 @@
         </div>
         
         <script type = "text/javascript">
+            var clockTimer;
+            
+            runClock();
+            resetClockTimer();
+        
             function toggleMenu(){
-                console.log('toggle');
                 var nav = $('#navigation');
                 if(nav.css('left') != '0px'){
                     openMenu();
                 }else{
                     closeMenu();
                 }
+                resetClockTimer();
             }
             
             function openMenu(){
@@ -48,12 +58,45 @@
                 closeMenu(true);
             }
             
+            function runClock(){
+                var date = new Date();
+                var months = ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'];
+                $('#clock_date').text(date.getDate()+' '+months[date.getMonth()]);
+                $('#clock_time').text(twoDigit(date.getHours()) + ':' + twoDigit(date.getMinutes()) + ':' + twoDigit(date.getSeconds()));
+                setTimeout(runClock, 1000);
+            }
+            
+            function twoDigit(num){
+                return (num<10 ? '0'+num : ''+num);
+            }
+            
+            function resetClockTimer(){
+                if(clockTimer){
+                    clearTimeout(clockTimer);
+                }
+                clockTimer = setTimeout(showClock, 2000*60);
+            }
+            
+            function showClock(){
+                //Check that black mode isn't running.
+                if($('#black_container').css('display') == 'none'){
+                    $('#clock').show()
+                }
+            }
+            
+            function hideClock(){
+                $('#clock').hide()
+                resetClockTimer();
+            }
+            
             function blackify(off){ 
                 if(!off){
-                    $('#black_container').css('display', 'block');
+                    $('#black_container').show();
+                    hideClock();
                     closeMenu();
                 }else{
-                    $('#black_container').css('display', 'none');
+                    $('#black_container').hide();
+                    resetClockTimer();
                 }
             }
         </script>

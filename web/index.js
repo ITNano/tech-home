@@ -1,5 +1,6 @@
 var app = require('express')();
 var http = require('http').Server(app);
+var server = require('./server').Server(http);
 
 //Start server
 var port = (process.argv.length>2?parseInt(process.argv[2]):80);

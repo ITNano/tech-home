@@ -1,10 +1,119 @@
 <html>
     <head>
         <title>Bulbs</title>
+        <link rel = "stylesheet" href = "../styles/bulbs.css" type = "text/css" />
+        <link rel = "stylesheet" href = "../styles/input_range.css" type = "text/css" />
         <script type = "text/javascript" src = "../scripts/jquery.js"></script>
+        <script type = "text/javascript" src = "/socket.io/socket.io.js"></script>
         <script type = "text/javascript" src = "../scripts/main.js"></script>
     </head>
-    <body>
-        Bulbs
+    <body onload = "startLightConnection(init);">
+        <div id = "bulbs"></div>
+        
+        <script type = "text/javascript">
+            var colors = {"white":[0, 0, 0, 230, 0], "red":[255, 0, 0, 0, 0], "green":[0, 255, 0, 0, 0], "blue":[0, 0, 255, 0, 0], "yellow":[255, 255, 0, 0, 0], "orange":[255, 160, 0, 0, 0], 'forest':[110, 255, 0, 0, 0], 'turqoise':[0,196,176,0,0]};
+            
+            function init(){
+                get_bulbs(function(bulbs){
+                    for(var index in bulbs){
+                        bulb = bulbs[index]
+                        add_generic_bulb(bulb.name, bulb.canonical_name, bulb.rooms, bulb.color, bulb.active);
+                    }
+                });
+                //add_generic_bulb('CL_CFD4AA', 'Bedroom', 'all|bedroom');
+                //add_generic_bulb('CL_CFD4BA', 'Kitchen', 'all|living room');
+                //add_generic_bulb('CL_CFD4FA', 'Window', 'all|living room');
+            }
+            
+            function add_generic_bulb(name, displayName, rooms, current_color, active){
+                var bulb = $('<div>').addClass('bulb').attr('name', name).attr('rooms', rooms.join('|')).attr('state', active?'on':'off');
+                var name_element = $('<div>').addClass('bulb_name').text(displayName);
+                var power_button = $('<div>').addClass('toggle_button').addClass('bulb_power').text(active?'On':'Off').on('click', function(){toggle_bulb(bulb);});
+                var title_menu = $('<div>').addClass('title_menu');
+                title_menu.append(name_element, power_button);
+                var colors_wrapper = $('<div>').addClass('preselected_colors');
+                var colors_container = $('<div>').addClass('preselected_colors_container');
+                var color_is_set = false;
+                for(var color_name in colors){
+                    var color = colors[color_name];
+                    var color_element = $('<div>').addClass('color_element').attr('color', color_name).attr('title', color_name).on('click', function(){set_color(bulb, colors[$(this).attr('color')]);});
+                    if(color.equals(current_color)){
+                        color_element.addClass('active');
+                        color_is_set = true;
+                    }
+                    if(color[3] > 0){
+                        color_element.css('background-color', 'rgba(255, 255, 255, '+color[3]+')');
+                    }else{
+                        color_element.css('background-color', 'rgb('+color[0]+', '+color[1]+', '+color[2]+')');
+                    }
+                    colors_container.append(color_element);
+                }
+                var unknown_color = $('<div>').addClass('color_element').addClass('noncolor').addClass('active').attr('color', '').attr('title', 'unknown').text('?');
+                var color_selector = $('<div>').addClass('color_selector');
+                var red_color = $('<input>').attr('type', 'range').attr('min', '0').attr('max', '255').addClass('red').change(function(){set_color(bulb, get_color(color_selector));});
+                var green_color = $('<input>').attr('type', 'range').attr('min', '0').attr('max', '255').addClass('green').change(function(){set_color(bulb, get_color(color_selector));});
+                var blue_color = $('<input>').attr('type', 'range').attr('min', '0').attr('max', '255').addClass('blue').change(function(){set_color(bulb, get_color(color_selector));});
+                
+                red_color.val(current_color[0]);
+                green_color.val(current_color[1]);
+                blue_color.val(current_color[2]);
+                
+                color_selector.append("R:", red_color);
+                color_selector.append("G:", green_color);
+                color_selector.append("B:", blue_color);
+                colors_wrapper.append(unknown_color, colors_container);
+                bulb.append(title_menu, colors_wrapper, color_selector);
+                $('#bulbs').append(bulb);
+            }
+            
+            function get_color(color_selector){
+                var selector = $(color_selector);
+                red = selector.find('.red').val();
+                green = selector.find('.green').val();
+                blue = selector.find('.blue').val();
+                console.log('done');
+                return [red, green, blue, 0, 0];
+            }
+        
+            function toggle_bulb(bulb_element){
+                var bulb = $(bulb_element);
+                var name = bulb.attr('name');
+                var turnOn = bulb.attr('state') == 'off';
+                bulb.attr('state', turnOn ? 'on' : 'off');
+                var button = bulb.find('.bulb_power');
+                button.text(turnOn ? 'On' : 'Off');
+                console.log('Should turn '+(turnOn?'on':'off')+' bulb '+name);
+                
+                if(turnOn){
+                    activate_bulb(name);
+                }else{
+                    deactivate_bulb(name);
+                }
+            }
+            
+            function set_color(bulb_element, color){
+                var name = $(bulb_element).attr('name');
+                console.log('setting color '+name+' = '+color+'')
+                // Reset UI.
+                $(bulb_element).find('.color_element').each(function(index, el){
+                    var element = $(el);
+                    if(colors[element.attr('color')] == color){
+                        if(!element.hasClass('active')){
+                            element.addClass('active');
+                        }
+                    }else{
+                        element.removeClass('active');
+                    }
+                });
+                
+                if(color[3] > 0){
+                    $(bulb_element).find('.color_display').css('background-color', 'rgba(255, 255, 255, '+color[3]+');');
+                }else{
+                    $(bulb_element).find('.color_display').css('background-color', 'rgb('+color[0]+', '+color[1]+', '+color[2]+');');
+                }
+                
+                set_bulb_color(name, color);
+            }
+        </script>
     </body>
 <html>
