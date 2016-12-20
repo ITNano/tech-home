@@ -1,42 +1,61 @@
 var io;
 var net = require('net');
-var waitingForData = [];
 var msgStart = '[MSG] ';
+var serviceData = {};
+var setupData = [{'service':'lights', 'ip':'192.168.1.10', 'port':63137, 'readCommands':['get all states']},
+                 {'service':'movies', 'ip':'192.168.1.20', 'port':63137, 'readCommands':['get movies']}];
 
 exports.Server = function(http){
 	this.http = http;
 	io = require('socket.io')(http);
     
-    var lightsConn = initLightsConnection(io, '192.168.1.10', 63137);
-    var lightsReadCommands = ['get all states'];
+    for(var i in setupData){
+        service = setupData[i]['service'];
+        serviceData[service] = {};
+        serviceData[service]['trigger'] = service;
+        serviceData[service]['datawaiters'] = [];
+        serviceData[service]['connection'] = initConnection(io, setupData[i]['ip'], setupData[i]['port'], setupData[i]['service']);
+        serviceData[service]['readCommands'] = setupData[i]['readCommands'];
+    }
 	
 	io.on('connection', function(socket){
-		socket.on('lights', function(cmd){
-            if(lightsReadCommands.indexOf(cmd) >= 0){
-                waitingForData.push(socket);
-            }
-			lightsConn.write(msgStart + cmd);
-		});
+        for(serviceName in serviceData){
+            socket.on(serviceData[serviceName]['trigger'], getMessageHandler(socket, serviceName));
+        }
 		/*socket.on('error', function(error){
 			console.log('An error occured: '+error);
 		});*/
 	});
 };
 
-function initLightsConnection(io, ip, port){
+function getMessageHandler(socket, serviceName){
+    return function(cmd){
+        service = serviceData[serviceName];
+        if(service['readCommands'].indexOf(cmd) >= 0){
+            serviceData[serviceName]['datawaiters'].push(socket);
+        }
+        service['connection'].write(msgStart + cmd);
+    };
+}
+
+function initConnection(io, ip, port, serviceName){
     socket = new net.Socket();
     socket.connect(port, ip, function(){
-       console.log('Connected to lights server on '+ip+':'+port); 
+       console.log('Connected to server on '+ip+':'+port+' (service '+serviceName+')'); 
     });
     socket.on('data', function(data){
         messages = data.toString('utf-8').split(msgStart);
         for(var index in messages){
             message = messages[index];
+            if(isJSONString(message)){
+                message = JSON.parse(message);
+            }
+            
             if(message.length != 0){
-                if(waitingForData.length > 0){
-                    waitingForData.shift().emit('lightsdata', JSON.parse(message));
+                if(serviceData[serviceName]['datawaiters'].length > 0){
+                    serviceData[serviceName]['datawaiters'].shift().emit(serviceData[serviceName]['trigger']+'data', message);
                 }else{
-                    io.emit('lightsdata', JSON.parse(message));
+                    io.emit(serviceData[serviceName]['trigger']+'data', message);
                 }
             }
         }
@@ -46,4 +65,13 @@ function initLightsConnection(io, ip, port){
     });
     
     return socket;
+}
+
+function isJSONString(json){
+    try{
+        JSON.parse(json);
+        return true;
+    }catch(e){
+        return false;
+    }
 }
