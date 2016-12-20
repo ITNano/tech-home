@@ -7,7 +7,7 @@ import os.path
 def handle_command(msg):
     cmd = msg.get_message()
     if cmd == "get list all":
-        msg.reply("listall " + json.dumps({"movies":Movies.get_movie_list(), "series":Movies.get_series_list()}))
+        msg.reply(json.dumps({"movies":Movies.get_movie_list(), "series":Movies.get_series_list()}))
     elif cmd == "show all":
         print("Want to show all stuffs on screen")
     elif cmd == "show movies":

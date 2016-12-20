@@ -5,6 +5,7 @@
 	
 var socket;
 var lightsUpdatesArray;
+var moviesUpdatesArray;
 
 function registerDataMover(eventName){
     if(!socket){
@@ -21,17 +22,19 @@ function registerDataMover(eventName){
     }
 }
 
-function startLightConnection(callback){
+function startConnection(callback){
     socket = io();
     socket.on('connect', function(socket){
         console.log('Connected to the server.');
         lightsUpdatesArray = registerDataMover('lightsdata');
+        moviesUpdatesArray = registerDataMover('moviesdata');
         if(callback){
             callback();
         }
     });
 }
 
+/* -------------------------- BULBS ------------------------- */
 function get_bulbs(callback){
     msg = 'get all states';
     socket.emit('lights', msg);
@@ -57,6 +60,12 @@ function set_bulb_color(name, color, callback){
 }
 
 
+/* -------------------------- MOVIES ------------------------- */
+function get_movies(callback){
+    msg = 'get list all';
+    socket.emit('movies', msg);
+    moviesUpdatesArray.push(callback);
+}
 
 
 /* ---------------------------- HELP FUNCTIONALITY ---------------------------- */

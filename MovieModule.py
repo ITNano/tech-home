@@ -25,9 +25,7 @@ def get_movie_words():
     return list(set(words))
     
 def handle_network_msg(connection, msg):
-    if msg[:8] == "listall ":
-        connection.media_dict = json.loads(msg[8:])
-    elif msg[:6] == "start ":
+    if msg[:6] == "start ":
         print("Setting message to : '" + msg[6:] + "'")
         connection.cmd_status = msg[6:]
     else:
