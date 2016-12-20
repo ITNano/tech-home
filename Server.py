@@ -40,7 +40,8 @@ class NetworkMessage:
         return self.msg
     
     def reply(self, msg):
-        self.sock.send((self.msg_start + msg).encode('utf-8'))
+        if self.sock is not None:
+            self.sock.send((self.msg_start + msg).encode('utf-8'))
         
 
 def handle_client(client, address):
