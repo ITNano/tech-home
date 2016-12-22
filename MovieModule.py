@@ -129,7 +129,7 @@ def isValid(text):
     return bool(re.search(r'\b(movies|series|watch)\b', text, re.IGNORECASE))
     
     
-conn = ClientConnection("192.168.1.49", 63137)
+conn = ClientConnection("192.168.1.20", 63137)
 conn.start_recv_thread(handle_network_msg)
 firstLoad = False
 
