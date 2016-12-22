@@ -25,7 +25,10 @@ def get_movie_words():
     return list(set(words))
     
 def handle_network_msg(connection, msg):
-    if msg[:6] == "start ":
+    if not firstLoad:
+        connection.media_dict = json.loads()
+        firstLoad = True
+    elif msg[:6] == "start ":
         print("Setting message to : '" + msg[6:] + "'")
         connection.cmd_status = msg[6:]
     else:
@@ -128,6 +131,7 @@ def isValid(text):
     
 conn = ClientConnection("192.168.1.49", 63137)
 conn.start_recv_thread(handle_network_msg)
+firstLoad = False
 
 FAILED_TO_PLAY = -1
 SUCCESS_TO_PLAY = 0
