@@ -25,8 +25,9 @@ def get_movie_words():
     return list(set(words))
     
 def handle_network_msg(connection, msg):
+    global firstLoad
     if not firstLoad:
-        connection.media_dict = json.loads()
+        connection.media_dict = json.loads(msg)
         firstLoad = True
     elif msg[:6] == "start ":
         print("Setting message to : '" + msg[6:] + "'")
