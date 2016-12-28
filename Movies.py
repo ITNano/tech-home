@@ -58,7 +58,7 @@ def get_seasons_of_serie(series):
     for file in os.listdir(series_folder):
         if file.startswith('Season ') and os.path.isdir(os.path.join(series_folder, file)):
             seasons.append(int(file[7:]))
-    return seasons
+    return sorted(seasons)
     
 # Retrieves the amount of episodes in a specific season of a series
 # param series: The exact name of the series

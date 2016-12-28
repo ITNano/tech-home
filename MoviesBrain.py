@@ -8,6 +8,12 @@ def handle_command(msg):
     cmd = msg.get_message()
     if cmd == "get list all":
         msg.reply(json.dumps({"movies":Movies.get_movie_list(), "series":Movies.get_series_list()}))
+    elif cmd[:12] == "get seasons ":
+        msg.reply(json.dumps(Movies.get_seasons_of_serie(cmd[12:])))
+    elif cmd[:17] == "get next episode ":
+        series = cmd[17:]
+        (season, episode) = get_next_episode(series)
+        msg.reply(json.dumps({"season":season, "episode":episode}))
     elif cmd == "show all":
         print("Want to show all stuffs on screen")
     elif cmd == "show movies":
