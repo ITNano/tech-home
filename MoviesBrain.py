@@ -9,9 +9,9 @@ def handle_command(msg):
     if cmd == "get list all":
         msg.reply(json.dumps({"movies":Movies.get_movie_list(), "series":Movies.get_series_list()}))
     elif cmd[:12] == "get seasons ":
-        msg.reply(json.dumps(Movies.get_seasons_of_serie(cmd[12:])))
+        msg.reply(json.dumps(Movies.get_seasons_of_serie(Movies.get_case_sensitive_series_name(cmd[12:]))))
     elif cmd[:17] == "get next episode ":
-        series = cmd[17:]
+        series = Movies.get_case_sensitive_series_name(cmd[17:])
         (season, episode) = get_next_episode(series)
         msg.reply(json.dumps({"season":season, "episode":episode}))
     elif cmd == "show all":
@@ -26,16 +26,16 @@ def handle_command(msg):
         data = cmd[13:].split("#.#")
         if len(data) == 2:
             if data[1] == "next":
-                series = data[0]
+                series = Movies.get_case_sensitive_series_name(data[0])
                 (season, episode) = get_next_episode(series)
             elif data[1] == "restart":
-                series = data[0]
+                series = Movies.get_case_sensitive_series_name(data[0])
                 (season, episode) = get_next_episode(series, increment=False)
             else:
                 msg.reply("start failed")
                 return
         elif len(data) == 3:
-            series = data[0]
+            series = Movies.get_case_sensitive_series_name(data[0])
             season = int(data[1])
             episode = int(data[2])
         else:

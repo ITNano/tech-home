@@ -38,7 +38,7 @@ def get_movie_list():
     movies = []
     for f in os.listdir(movies_folder):
         if os.path.isdir(movies_folder + "/" + f) and find_movie_file(f) is not None:
-            movies.append(f.upper())
+            movies.append(f)
     return movies
     
 # Retrieves a list of all available series.
@@ -47,8 +47,16 @@ def get_series_list():
     for f in os.listdir(movies_folder):
         full_path = movies_folder + "/" + f
         if os.path.isdir(full_path) and is_series_folder(full_path):
-            series.append(f.upper())
+            series.append(f)
     return series
+    
+# Retrieves the name with correct case, for case sensitive OSes
+def get_case_sensitive_series_name(name):
+    name_lower = name.lower()
+    for series_name in get_series_list():
+        if name_lower == series_name.lower():
+            return series_name
+    return None
     
 # Retrieves a list of all seasons of the given series
 # param series: The exact name of the series
