@@ -58,18 +58,19 @@ def handle_command(msg):
         msg.reply("Feature not implemented.")
         
 def get_next_episode(series, increment = True):
-    if watch_data.get(series, None) is None:
+    series_key = series.upper()
+    if watch_data.get(series_key, None) is None:
         # First time watching
         return (Movies.get_seasons_of_serie(series)[0], 1)
     else:
         for season in reversed(Movies.get_seasons_of_serie(series)):
             season_str = "S"+get_two_digit_num(season)
-            if watch_data[series].get(season_str, None) is not None:
+            if watch_data[series_key].get(season_str, None) is not None:
                 episodes = Movies.get_nbr_of_episodes_in_season(series, season)
                 for episode in reversed(range(1, episodes+1)):
                     episode_str = "E"+get_two_digit_num(episode)
-                    if watch_data[series][season_str].get(episode_str, None) is not None:
-                        if watch_data[series][season_str][episode_str]["seen"]:
+                    if watch_data[series_key][season_str].get(episode_str, None) is not None:
+                        if watch_data[series_key][season_str][episode_str]["seen"]:
                             if not increment:
                                 return (season, episode)
                             else:
@@ -89,6 +90,7 @@ def watched_movie(movie):
     save_watch_data()
     
 def watched_episode(series, season, episode):
+    series = series.upper()
     season = "S"+get_two_digit_num(season)
     episode = "E"+get_two_digit_num(episode)
     if watch_data.get(series, None) is None:
