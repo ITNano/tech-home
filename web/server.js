@@ -3,7 +3,7 @@ var net = require('net');
 var msgStart = '[MSG] ';
 var serviceData = {};
 var setupData = [{'service':'lights', 'ip':'192.168.1.10', 'port':63137, 'readCommands':['get all states']},
-                 {'service':'movies', 'ip':'192.168.1.20', 'port':63137, 'readCommands':['get movies']}];
+                 {'service':'movies', 'ip':'192.168.1.10', 'port':63138, 'readCommands':['get movies']}];
 
 exports.Server = function(http){
 	this.http = http;

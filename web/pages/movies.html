@@ -7,18 +7,215 @@
         <script type = "text/javascript" src = "../scripts/main.js"></script>
     </head>
     <body onload = "startConnection(init);">
-        <div id = "movies"></div>
+        <div id = "content">
+            <div id = "movies_list">
+                <div id = "series_head">Series</div>
+                <div id = "series"></div>
+                <div id = "movies_head">Movies</div>
+                <div id = "movies"></div>
+                <div id = "reload_button" class = "centering_wrapper">
+                    <input type = "button" value = "Reload content" onclick = "updateContent();">
+                </div>
+            </div>
+            <div id = "preview_area">
+                <div id = "preview_startup">Nothing selected to preview.</div>
+                <div id = "preview_error">
+                    Could not find the requested data.
+                    <div class = "centering_wrapper">
+                        <input id = "start_movie_button" type = "button" value = "Start movie" onclick = "playMovie($('#preview_error').attr('current'));">
+                        <input id = "start_series_button" type = "button" value = "Next episode" onclick = "playNextEpisode($('#preview_error').attr('current'));">
+                    </div>
+                </div>
+                <div id = "preview_movie">
+                    <div id = "preview_movie_title" class = "preview_title"></div>
+                    <!-- <div id = "preview_tagline" class = "preview_tagline">With the power of a bad tagline</div> -->
+                    <div id = "preview_movie_info" class = "preview_info">
+                        <!-- <div id = "preview_release">2016-05-02</div> -->
+                        <img src = "../imgs/time_icon.png">
+                        <div id = "preview_movie_time" class = "preview_time"></div>
+                        <img src = "../imgs/rating_icon.png">
+                        <div id = "preview_movie_rating" class = "preview_rating"></div>
+                    </div>
+                    <div id = "preview_movie_genres" class = "preview_genres"></div>
+                    <div id = "preview_movie_description" class = "preview_description"></div>
+                    <div class = "centering_wrapper">
+                        <input type = "button" value = "Start movie" onclick = "playMovie($('#preview_movie').attr('current'));">
+                    </div>
+                </div>
+                <div id = "preview_series">
+                    <div id = "preview_series_title" class = "preview_title"></div>
+                    <div id = "preview_series_info" class = "preview_info">
+                        <div id = "preview_series_seasons" class = "preview_seasons"></div>
+                        <img src = "../imgs/rating_icon.png">
+                        <div id = "preview_series_rating" class = "preview_rating"></div>
+                    </div>
+                    <div id = "preview_series_genres" class = "preview_genres"></div>
+                    <div id = "preview_series_description" class = "preview_description"></div>
+                    <div class = "centering_wrapper">
+                        <input type = "button" value = "Choose episode" onclick = "chooseEpisode($('#preview_series').attr('current'), $('#preview_series').attr('current_id'));">
+                        <input id = "preview_series_next_button" type = "button" value = "Next episode" onclick = "playNextEpisode($('#preview_series').attr('current'));">
+                    </div>
+                </div>
+                <div id = "preview_series_episodes">
+                    <img id = "preview_series_episodes_close" src = "../imgs/close_icon.png" onclick = "$('#preview_series_episodes').hide();">
+                    <div id = "preview_series_episode_list">
+                    </div>
+                    <div id = "episodestarter">
+                        <div id = "episodestarter_text">
+                            Do you want to start <span id = "episodestarter_content"></span>?
+                        </div>
+                        <div class = "centering_wrapper">
+                            <input type = "button" value = "Cancel" onclick = "$('#episodestarter').hide();">
+                            <input type = "button" value = "&#9658; Play" onclick = "var el = $('#episodestarter'); playEpisode(el.attr('series'), el.attr('season'), el.attr('episode')); el.hide();$('#preview_series_episodes_close').click();">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <script type = "text/javascript">
+            var active_element;
+        
             function init(){
-                get_movies(function(movies){
-                    console.log(typeof movies);
-                    console.log(JSON.stringify(movies));
-                    for(var index in movies){
-                        movie = movies[index]
-                        //console.log(movie);
+                updateContent();
+            }
+            
+            function updateContent(){
+                $('#reload_button input').attr('disabled', 'true');
+                get_movies(function(data){
+                    console.log('populating...');
+                    var container = $('#series');
+                    container.empty();
+                    for(var index in data['series']){
+                        series = data['series'][index]
+                        var series_element = $('<div>').addClass('series movieentry').attr('raw_name', series).text(series);
+                        series_element.on('click', getClickHandler(series_element));
+                        container.append(series_element);
                     }
+                    
+                    container = $('#movies');
+                    container.empty();
+                    for(var index in data['movies']){
+                        movie = data['movies'][index]
+                        var movies_element = $('<div>').addClass('movie movieentry').attr('raw_name', movie).text(movie);
+                        movies_element.on('click', getClickHandler(movies_element));
+                        container.append(movies_element);
+                    }
+                    
+                    $('#reload_button input').removeAttr('disabled');
                 });
+            }
+            
+            function getClickHandler(element){
+                return function(){
+                    previewMedia(element);
+                    if(!element.hasClass('active')){
+                        element.addClass('active');
+                    }
+                    if(active_element){
+                        active_element.removeClass('active');
+                    }
+                    active_element = element;
+                }
+            }
+            
+            function previewMedia(element){
+                $('#preview_startup').hide();
+                $('#preview_error').hide();
+                $('#preview_series_episodes').hide();
+                
+                var el = $(element);
+                if(el.hasClass('movie')){
+                    $('#start_series_button').hide();
+                    $('#preview_series').hide();
+                    getMovieInfo(el.attr('raw_name'), 'movie', function(moviedata){
+                        if(!moviedata.error){
+                            $('#preview_movie_title').text(moviedata.title);
+                            $('#preview_movie_tagline').text(moviedata.tagline);
+                            $('#preview_movie_release').text(moviedata.release);
+                            $('#preview_movie_time').text(getHourMinFromMin(moviedata.time));
+                            $('#preview_movie_rating').text(moviedata.rating+' / 10');
+                            var container = $('#preview_movie_genres');
+                            container.empty();
+                            for(var index in moviedata.genres){
+                                container.append(getGenreUI(moviedata.genres[index]));
+                            }
+                            $('#preview_movie_description').text(moviedata.description);
+                            $('#preview_movie').attr('current', el.attr('raw_name')).attr('current_id', moviedata.id).show();
+                        }else{
+                            $('#preview_movie').hide();
+                            $('#preview_error').attr('current', el.attr('raw_name')).show();
+                            $('#start_movie_button').show();
+                        }
+                    });
+                }else if(el.hasClass('series')){
+                    $('#start_series_button').hide();
+                    $('#preview_movie').hide();
+                    getMovieInfo(el.attr('raw_name'), 'series', function(data){
+                        if(!data.error){
+                            $('#preview_series_title').text(data.title);
+                            $('#preview_series_seasons').text(data.seasons+' season'+(data.seasons>1?'s':''));
+                            $('#preview_series_rating').text(data.rating+' / 10');
+                            var container = $('#preview_series_genres');
+                            container.empty();
+                            for(var index in data.genres){
+                                container.append(getGenreUI(data.genres[index]));
+                            }
+                            $('#preview_series_description').text(data.description);
+                            $('#preview_series').attr('current', el.attr('raw_name')).attr('current_id', data.id).show();
+                        }else{
+                            $('#preview_movie').hide();
+                            $('#preview_error').attr('current', el.attr('raw_name')).show();
+                            $('#start_series_button').show();
+                        }
+                    });
+                    getNextEpisode(el.attr('raw_name'), function(data){
+                        if(!data.error){
+                            $('#preview_series_next_button').val("Next episode (S"+two_digit(data.season)+"E"+two_digit(data.episode)+")");
+                        }
+                    });
+                }else{
+                    $('#preview_error').show();
+                    $('#start_movie_button').hide();
+                    $('#start_series_button').hide();
+                }
+            }
+            
+            function chooseEpisode(name, series_id){
+                $('#preview_series_episodes').show();
+                
+                var container = $('#preview_series_episode_list');
+                container.empty();
+                getSeasons(name, function(seasons){
+                    console.log(seasons);
+                    seasons.forEach(function(season){
+                        getSeasonData(series_id, season, function(data){
+                            if(!data.error){
+                                var seasonUI = $('<div>').addClass('season');
+                                seasonUI.append($('<div>').addClass('seasonheader').text('Season '+season));
+                                container.append(seasonUI);
+                                data.episodes.forEach(function(episode){
+                                    var ui = $('<div>').addClass('episodeinfo').attr('season', season).attr('episode', episode.episode).text('S'+two_digit(season)+'E'+two_digit(episode.episode)+': '+episode.name);
+                                    ui.on('click', function(){
+                                        $('#episodestarter_content').text('S'+two_digit(season)+'E'+two_digit(episode.episode));
+                                        var el = $('#episodestarter');
+                                        el.attr('series', name).attr('season', season).attr('episode', episode.episode).show();
+                                    });
+                                    seasonUI.append(ui);
+                                });
+                            }
+                        });
+                    });
+                });
+            }
+            
+            function getGenreUI(genre){
+                return $('<div>').addClass('genre').text(genre);
+            }
+            
+            function getHourMinFromMin(minutes){
+                mins = minutes%60;
+                return Math.floor(minutes/60)+'h '+(mins<10?'0':'')+mins+'min';
             }
         </script>
     </body>

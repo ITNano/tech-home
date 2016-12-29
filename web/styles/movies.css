@@ -1,0 +1,222 @@
+input[type=button],input[type=submit]{
+    padding:8px 16px;
+    background-color:#228b22;
+    color:#fff;
+    border-width:0px;
+}
+input[type=button]:hover,input[type=submit]:hover{
+    opacity:0.8;
+    cursor:hand;
+    cursor:pointer;
+}
+input[type=button]:disabled,input[type=submit]:disabled{
+    opacity:0.5;
+    cursor:default;
+}
+.centering_wrapper{
+    text-align:center;
+}
+
+#content{
+    position:absolute;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+}
+#movies_list{
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    width:400px;
+    height:auto;
+    overflow-x:hidden;
+    overflow-y:auto;
+    padding:10px;
+    padding-right:0px;
+    border-right:1px solid #ddd;
+}
+#preview_area{
+    position:absolute;
+    top:0;
+    bottom:0;
+    right:0;
+    left:410;
+    width:auto;
+    height:auto;
+    overflow-x:hidden;
+    overflow-y:auto;
+    padding:10px;
+}
+
+#series_head, #movies_head{
+    display:inline-block;
+    border-bottom:1px solid #aaa;
+    font-size:20px;
+    font-variant:small-caps;
+    margin-bottom:5px;
+}
+#reload_button{
+    margin-top:10px;
+    margin-bottom:20px;
+}
+
+.movieentry{
+    padding:5px 20px;
+    vertical-align:middle;
+    white-space:nowrap;
+    overflow:hidden;
+}
+.movieentry.active{
+    background-color:#ddd;
+}
+.movieentry:hover{
+    cursor:hand;
+    cursor:pointer;
+    background-color:#eee;
+}
+
+#preview_startup{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    -moz-transform: translate(-50%,-50%);
+    -o-transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+}
+#preview_error, #preview_movie, #preview_series, #preview_series_episodes{
+    display:none;
+}
+#preview_series_episodes{
+    z-index:10001;
+}
+#start_movie_button, #start_series_button{
+    margin-top:10px;
+}
+
+.preview_title{
+    text-align:center;
+    font-size:36px;
+}
+.preview_tagline{
+    text-align:center;
+    font-size:16px;
+    color:#888;
+    margin:0px 30px;
+    margin-bottom:10px;
+}
+.preview_info{
+    text-align:center;
+    margin-bottom:10px;
+}
+.preview_info *{
+    display:inline-block;
+    vertical-align:middle;
+    margin:0;
+    padding:0;
+}
+.preview_info img{
+    width:16px;
+    height:16px;
+}
+.preview_info div{
+    margin-right:10px;
+}
+.preview_description{
+    text-align:justify;
+    margin-bottom:10px;
+}
+.genre{
+    display:inline-block;
+    padding:4px 8px;
+    margin-right:5px;
+    margin-bottom:5px;
+    background-color:rgba(34, 139, 34, 0.7);
+    font-size:11px;
+    color:#fff;
+    border:1px solid #ddd;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+.genre:hover{
+    cursor:default;
+}
+
+
+#preview_series_episodes{
+    position:absolute;
+    top:0;
+    bottom:0;
+    right:0;
+    left:1;
+    width:auto;
+    height:auto;
+    background-color:#fff;
+    overflow:hidden;
+}
+#preview_series_episode_list{
+    position:absolute;
+    top:0;
+    bottom:0;
+    right:-18;
+    left:1;
+    width:auto;
+    height:auto;
+    overflow:auto;
+}
+#preview_series_episodes_close{
+    position:absolute;
+    right:10;
+    top:10;
+    width:32px;
+    height:32px;
+    z-index:15;
+}
+#preview_series_episodes_close:hover{
+    opacity:0.5;
+    cursor:hand;
+    cursor:pointer;
+}
+.season{
+    margin-bottom:10px;
+}
+.seasonheader{
+    font-size:24px;
+    padding:5px 10px;
+    border-bottom:1px solid #aaa;
+}
+.episodeinfo{
+    padding:5px 10px;
+    font-size:18px;
+    border-bottom:1px solid #aaa;
+    overflow:hidden;
+    white-space:nowrap;
+}
+.episodeinfo:hover{
+    cursor:hand;
+    cursor:pointer;
+}
+#episodestarter{
+    position: absolute;
+    width:50%;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    -moz-transform: translate(-50%,-50%);
+    -o-transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+    padding:20px;
+    background-color:#fff;
+    border:1px solid #aaa;
+    z-index:15;
+    display:none;
+}
+#episodestarter_text{
+    margin-bottom:10px;
+}
