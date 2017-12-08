@@ -2,7 +2,7 @@ var express = require('express'), app = express();
 var http = require('http'), https = require("https");
 var fs = require("fs");
 
-var server = require('server').Server(http);
+var server = require('./server').Server(http);
 
 
 var options = {
