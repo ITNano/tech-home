@@ -83,7 +83,6 @@
             function updateContent(){
                 $('#reload_button input').attr('disabled', 'true');
                 get_movies(function(data){
-                    console.log('populating...');
                     var container = $('#series');
                     container.empty();
                     for(var index in data['series']){
@@ -95,9 +94,11 @@
                     
                     container = $('#movies');
                     container.empty();
-                    for(var index in data['movies']){
-                        movie = data['movies'][index]
-                        var movies_element = $('<div>').addClass('movie movieentry').attr('raw_name', movie).text(movie);
+					var movies = data["movies"];
+					movies.sort(function(a, b){return fixMovieName(a).localeCompare(fixMovieName(b));});
+                    for(var index in movies){
+                        movie = movies[index];
+                        var movies_element = $('<div>').addClass('movie movieentry').attr('raw_name', movie).text(fixMovieName(movie));
                         movies_element.on('click', getClickHandler(movies_element));
                         container.append(movies_element);
                     }

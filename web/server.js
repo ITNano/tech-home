@@ -2,20 +2,22 @@ var io;
 var net = require('net');
 var msgStart = '[MSG] ';
 var serviceData = {};
-var setupData = [{'service':'lights', 'ip':'192.168.1.10', 'port':63137, 'readCommands':['get all states']},
-                 {'service':'movies', 'ip':'192.168.1.10', 'port':63138, 'readCommands':['get movies']}];
+var setupData = [{'service':'lights', 'ip':'192.168.1.10', 'port':63137, 'readCommands':['get all states'], enabled:false},
+                 {'service':'movies', 'ip':'192.168.1.20', 'port':63137, 'readCommands':['get movies'], enabled: true}];
 
 exports.Server = function(http){
 	this.http = http;
 	io = require('socket.io')(http);
     
     for(var i in setupData){
-        service = setupData[i]['service'];
-        serviceData[service] = {};
-        serviceData[service]['trigger'] = service;
-        serviceData[service]['datawaiters'] = [];
-        serviceData[service]['connection'] = initConnection(io, setupData[i]['ip'], setupData[i]['port'], setupData[i]['service']);
-        serviceData[service]['readCommands'] = setupData[i]['readCommands'];
+        if(setupData[i]['enabled']){
+            service = setupData[i]['service'];
+            serviceData[service] = {};
+            serviceData[service]['trigger'] = service;
+            serviceData[service]['datawaiters'] = [];
+            serviceData[service]['connection'] = initConnection(io, setupData[i]['ip'], setupData[i]['port'], setupData[i]['service']);
+            serviceData[service]['readCommands'] = setupData[i]['readCommands'];
+        }
     }
 	
 	io.on('connection', function(socket){

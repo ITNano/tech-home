@@ -6,17 +6,30 @@
 var socket;
 var lightsUpdatesArray;
 var moviesUpdatesArray;
+var buffers = {};
 
 function registerDataMover(eventName){
     if(!socket){
         console.log('Warning: Tried to register data mover before socket was initialized!');
     }else{
         var listenerArray = [];
+		buffers[eventName] = "";
         socket.on(eventName, function(data){
-            var callback = listenerArray.shift();
-            if(typeof callback == "function"){
-                callback(data);
-            }
+			if(typeof data == "object"){
+				var callback = listenerArray.shift();
+				if(typeof callback == "function"){
+					callback(data);
+				}
+			}else{
+				buffers[eventName] = buffers[eventName] + data;
+				if(isJsonString(buffers[eventName])){
+					var callback = listenerArray.shift();
+					if(typeof callback == "function"){
+						callback(JSON.parse(buffers[eventName]));
+					}
+					buffers[eventName] = "";
+				}
+			}
         });
         return listenerArray;
     }
@@ -197,6 +210,15 @@ function findFirstOccurence(str, comparisonArr){
 function two_digit(num){
     return (num<10?'0':'')+num;
 }
+
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+} 
 
 
 // @source : http://stackoverflow.com/questions/7837456/how-to-compare-arrays-in-javascript
