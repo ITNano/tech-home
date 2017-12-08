@@ -2,7 +2,7 @@ import socket
 import threading
 import sys
 import netifaces
-from Brain import handle_command
+from LightBrain import handle_command
 
 class ThreadedServer(object):
     def __init__(self, host, port, client_func):

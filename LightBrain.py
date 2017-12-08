@@ -125,6 +125,7 @@ def connect_to_bulb(bulb):
     return success
     
 def send_message(content, retransmits=3):
+    print("sending ",content," to sock ",sock)
     if sock is not None:
         for i in range(0, retransmits):
             sock.sendto(content, ("192.168.4.255", 30977))

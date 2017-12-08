@@ -2,8 +2,9 @@ var io;
 var net = require('net');
 var msgStart = '[MSG] ';
 var serviceData = {};
-var setupData = [{'service':'lights', 'ip':'192.168.1.10', 'port':63137, 'readCommands':['get all states'], enabled:false},
-                 {'service':'movies', 'ip':'192.168.1.20', 'port':63137, 'readCommands':['get movies'], enabled: true}];
+
+var setupData = [{'service':'lights', 'ip':'192.168.1.10', 'port':63137, 'readCommands':['get all states']},
+                 {'service':'movies', 'ip':'192.168.1.20', 'port':63137, 'readCommands':['get movies']}];
 
 exports.Server = function(http){
 	this.http = http;
@@ -64,6 +65,9 @@ function initConnection(io, ip, port, serviceName){
     });
     socket.on('close', function(){
        console.log('Warning: Lost connection with the server'); 
+    });
+    socket.on('error', function(){
+        console.log('Got an error from service '+serviceName);
     });
     
     return socket;
