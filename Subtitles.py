@@ -6,24 +6,11 @@ import codecs
 import string
 import random
 
-# Parses the data from a Google search and finds the first search result link.
-# The link will be stored in the instance variable link, if found.
-# Use GoogleHTMLParser.feed(input) to insert the data to parse.
-class GoogleHTMLParser(HTMLParser):
-
+class ExtendedHTMLParser(HTMLParser):
+    
     def __init__(self):
         HTMLParser.__init__(self)
-        self.activated = False
-        self.done = False
-        self.link = None
-
-    def handle_starttag(self, tag, attrs):
-        if not self.activated and tag == "div" and self.has_attribute_value(attrs, "class", "g"):
-            self.activated = True
-        elif self.activated and not self.done and tag == "a":
-            self.link = self.get_attribute(attrs, "href")
-            self.done = True
-            
+    
     def get_attribute(self, attrs, attr):
         matches = [c[1] for c in attrs if c[0] == attr]
         if len(matches) == 1:
@@ -33,6 +20,41 @@ class GoogleHTMLParser(HTMLParser):
             
     def has_attribute_value(self, attrs, attr, value):
         return len([c for c in attrs if c[0] == attr and c[1] == value]) > 0
+
+# Parses the data from a Google search and finds the first search result link.
+# The link will be stored in the instance variable link, if found.
+# Use GoogleHTMLParser.feed(input) to insert the data to parse.
+class GoogleHTMLParser(ExtendedHTMLParser):
+
+    def __init__(self, eval_link):
+        ExtendedHTMLParser.__init__(self)
+        self.activated = False
+        self.done = False
+        self.link = None
+        self.eval_link = eval_link
+
+    def handle_starttag(self, tag, attrs):
+        if not self.activated and tag == "div" and self.has_attribute_value(attrs, "class", "g"):
+            self.activated = True
+        elif self.activated and not self.done and tag == "a":
+            link = self.get_attribute(attrs, "href")
+            if link is not None and len(link) > 7:
+                link = link[7:]
+            if self.eval_link is None or self.eval_link(link):
+                self.link = link
+                self.done = True
+            else:
+                self.activated = False
+                
+class SubsceneHTMLParser(ExtendedHTMLParser):
+    
+    def __init__(self, eval_link):
+        ExtendedHTMLParser.__init__(self)
+        self.link = None
+        
+    def handle_starttag(self, tag, attrs):
+        if tag == "a" and self.has_attribute_value(attrs, "id", "downloadButton"):
+            self.link = "https://subscene.com" + self.get_attribute(attrs, "href")
 
 # Retrieves the subtitle file of a series episode, either locally or from the
 # internet (opensubtitles.com)
@@ -62,36 +84,74 @@ def get_subtitle(searchword, target_filename):
         
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
-    subid = get_subtitle_id(searchword)
-    subtitle_path = get_subtitle_from_opensubtitles(subid, target_file)
-    
+    subtitle_path = get_subtitle_from_subscene(searchword, target_file)
+    if subtitle_path is None:
+        print("Using OpenSubtitles")
+        subtitle_path = get_subtitle_from_opensubtitles(searchword, target_file)
+    else:
+        print("Using Subscene")
+        
     return target_file
-    
-# Retrieve an opensubtitles subtitle id from a search word. This id can be used
-# to specify a particular subtitle file.
-# param searchword: The search word to find a specific subtitle file.
-def get_subtitle_id(searchword):
-    base_url = "https://www.google.se/search?q="
-    search_url = base_url + searchword.replace(' ', '+') + "+subs+opensubtitles&ie=utf-8&oe=utf-8"
-    response = requests.get(search_url)
-    if not response.status_code == 200:
-        print("Whoops, could not search for the file : Check internet connection")
-        return None
-    parser = GoogleHTMLParser()
-    parser.feed(response.text)
-    
-    if not parser.done or parser.link is None:
-        print("Invalid input from the search : Check your internet connection")
-        return None
-    
-    return parser.link.split("/")[-2]
     
 # Retrieves a subtitle file from opensubtitles and stores it in the given file
 # location if possible.
 # param subid: Opensubtitles subtitle ID for the wanted subtitle
 # param filename: The path to store the subtitle to.
-def get_subtitle_from_opensubtitles(subid, filename):
+def get_subtitle_from_opensubtitles(searchword, filename):
+    subid = get_opensubtitles_id(searchword)
     file_url = "http://dl.opensubtitles.org/en/download/vrf-108d030f/sub/"+subid
+    return get_subtitle_from_zip(file_url, filename)
+    
+def get_subtitle_from_subscene(searchword, filename):
+    base_url = "https://www.google.se/search?q="
+    search_url = base_url + searchword.replace(' ', '+') + "+subtitles+\"subscene.com\"+english&ie=utf-8&oe=utf-8"
+    def subscene_eval_link(link):
+        return 'subscene.com' in link and 'english' in link
+    subscene_link = get_google_result(search_url, subscene_eval_link)
+    if subscene_link is not None:
+        response = requests.get(subscene_link.split("&")[0])
+        if not response.status_code == 200:
+            print("Whoops, could not search for the file : Check internet connection")
+            return None
+        
+        parser = SubsceneHTMLParser(subscene_eval_link)
+        parser.feed(response.text)
+        if parser.link is not None:
+            downloadLink = parser.link
+            return get_subtitle_from_zip(downloadLink, filename)
+    
+    return None
+    
+# Retrieve an opensubtitles subtitle id from a search word. This id can be used
+# to specify a particular subtitle file.
+# param searchword: The search word to find a specific subtitle file.
+def get_opensubtitles_id(searchword):
+    base_url = "https://www.google.se/search?q="
+    search_url = base_url + searchword.replace(' ', '+') + "+subs+\"opensubtitles.org\"&ie=utf-8&oe=utf-8"
+    def opensubtitles_eval_link(link):
+        return 'opensubtitles.org' in link
+    opensubtitles_link = get_google_result(search_url, opensubtitles_eval_link)
+    if opensubtitles_link is not None:
+        return opensubtitles_link.split("/")[-2]
+    else:
+        return None
+    
+def get_google_result(search_url, eval_link):
+    response = requests.get(search_url)
+    if not response.status_code == 200:
+        print("Whoops, could not search for the file : Check internet connection")
+        return None
+    
+    parser = GoogleHTMLParser(eval_link)
+    parser.feed(response.text)
+    
+    if not parser.done or parser.link is None:
+        print("Invalid input from the search : Check your internet connection")
+        return None
+    else:
+        return parser.link
+    
+def get_subtitle_from_zip(file_url, filename):
     tmp_folder = get_random_string(16)
     tmp_file = tmp_folder + "/subtitle_tmp.zip"
     os.makedirs(tmp_folder)
