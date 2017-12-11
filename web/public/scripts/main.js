@@ -2,74 +2,34 @@
 ** NOTE: This file requires the socket.io module  **
 **       and jQuery to be loaded by the html doc  **
 /**************************************************/
-	
-var socket;
-var lightsUpdatesArray;
-var moviesUpdatesArray;
-var buffers = {};
 
-function registerDataMover(eventName){
-    if(!socket){
-        console.log('Warning: Tried to register data mover before socket was initialized!');
-    }else{
-        var listenerArray = [];
-		buffers[eventName] = "";
-        socket.on(eventName, function(data){
-			if(typeof data == "object"){
-				var callback = listenerArray.shift();
-				if(typeof callback == "function"){
-					callback(data);
-				}
-			}else{
-				buffers[eventName] = buffers[eventName] + data;
-				if(isJsonString(buffers[eventName])){
-					var callback = listenerArray.shift();
-					if(typeof callback == "function"){
-						callback(JSON.parse(buffers[eventName]));
-					}
-					buffers[eventName] = "";
-				}
-			}
-        });
-        return listenerArray;
-    }
-}
-
-function startConnection(callback){
-    socket = io();
-    socket.on('connect', function(socket){
-        console.log('Connected to the server.');
-        lightsUpdatesArray = registerDataMover('lightsdata');
-        moviesUpdatesArray = registerDataMover('moviesdata');
-        if(callback){
-            callback();
+function doRequest(service, cmd, callback){
+    page = "/service/"+service+"/?cmd="+cmd.split(" ").join("%20");
+    console.log("Loading "+page);
+    httpGetAsync(page, function(res){
+        if(res.code == 200){
+            callback(JSON.parse(res.response));
+        }else{
+            callback({error: res.response});
         }
     });
 }
 
 /* -------------------------- BULBS ------------------------- */
 function get_bulbs(callback){
-    msg = 'get all states';
-    socket.emit('lights', msg);
-    lightsUpdatesArray.push(callback);
+    doRequest("lights", "get all states", callback);
 }
 
 function deactivate_bulb(name, callback){
-    msg = "deactivate bulbs "+name;
-    socket.emit('lights', msg);
-    lightsUpdatesArray.push(callback);
+    doRequest("lights", "deactivate bulbs "+name, callback);
 }
 
 function activate_bulb(name, callback){
-    msg = "activate bulbs "+name;
-    socket.emit('lights', msg);
-    lightsUpdatesArray.push(callback);
+    doRequest("lights", "activate bulbs "+name, callback);
 }
 
 function set_bulb_color(name, color, callback){
-    msg = "color bulbs "+color.join(' ')+' '+name;
-    socket.emit('lights', msg);
-    lightsUpdatesArray.push(callback);
+    doRequest("lights", "color bulbs "+color.join(' ')+' '+name, callback);
 }
 
 
@@ -77,42 +37,30 @@ function set_bulb_color(name, color, callback){
 var apiKey = 'c3aa6df001e2ebb866994c0a829cd0dc';
 
 function get_movies(callback){
-    msg = 'get list all';
-    socket.emit('movies', msg);
-    moviesUpdatesArray.push(callback);
+    doRequest("movies", "get list all", callback);
 }
 
 function getSeasons(series, callback){
-    msg = 'get seasons '+series
-    socket.emit('movies', msg);
-    moviesUpdatesArray.push(callback);
+    doRequest("movies", "get seasons:: "+series, callback);
 }
 
 function getNextEpisode(series, callback){
-    msg = 'get next episode '+series
-    socket.emit('movies', msg);
-    moviesUpdatesArray.push(callback);
+    doRequest("movies", "get next episode:: "+series, callback);
 }
 
 function playMovie(movie, callback){
-    console.log('should start movie '+movie);
-    msg = 'start movie '+movie;
-    socket.emit('movies', msg);
-    moviesUpdatesArray.push(callback);
+    console.log("Should start movie "+movie);
+    doRequest("movies", "start movie "+movie, callback);
 }
 
 function playEpisode(series, season, episode, callback){
-    console.log('should start '+series+' s'+season+'e'+episode);
-    msg = 'start series '+series+'#.#'+season+'#.#'+episode;
-    socket.emit('movies', msg);
-    moviesUpdatesArray.push(callback);
+    console.log("Should start "+series+" s"+season+"e"+episode);
+    doRequest("movies", "start series "+series+"#.#"+season+"#.#"+episode, callback);
 }
 
 function playNextEpisode(series, callback){
-    console.log('should start next episode of '+series);
-    msg = 'start series '+series+'#.#next';
-    socket.emit('movies', msg);
-    moviesUpdatesArray.push(callback);
+    console.log("Should start next episode of "+series);
+    doRequest("movies", "start series "+series+"#.#next", callback);
 }
 
 function getSeasonData(series_id, season, callback){
@@ -218,7 +166,18 @@ function isJsonString(str) {
         return false;
     }
     return true;
-} 
+}
+
+function httpGetAsync(url, callback){
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4){
+            callback({code: xmlHttp.status, response: xmlHttp.responseText});
+        }
+    }
+    xmlHttp.open("GET", url, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
 
 
 // @source : http://stackoverflow.com/questions/7837456/how-to-compare-arrays-in-javascript

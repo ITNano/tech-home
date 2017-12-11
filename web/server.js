@@ -1,15 +1,13 @@
 var io;
+var buffers = {};
 var net = require('net');
 var msgStart = '[MSG] ';
 var serviceData = {};
 
 var setupData = [{'service':'lights', 'ip':'192.168.1.10', 'port':63137, 'readCommands':['get all states']},
-                 {'service':'movies', 'ip':'192.168.1.20', 'port':63137, 'readCommands':['get movies'], 'enabled': true}];
-
-exports.Server = function(http){
-	this.http = http;
-	io = require('socket.io')(http);
-    
+                 {'service':'movies', 'ip':'192.168.1.20', 'port':63137, 'readCommands':['get list all', 'get seasons', 'get next episode'], 'enabled': true}];
+                 
+exports.init = function(){
     for(var i in setupData){
         if(setupData[i]['enabled']){
             service = setupData[i]['service'];
@@ -20,26 +18,15 @@ exports.Server = function(http){
             serviceData[service]['readCommands'] = setupData[i]['readCommands'];
         }
     }
-	
-	io.on('connection', function(socket){
-        for(serviceName in serviceData){
-            socket.on(serviceData[serviceName]['trigger'], getMessageHandler(socket, serviceName));
-        }
-		/*socket.on('error', function(error){
-			console.log('An error occured: '+error);
-		});*/
-	});
 };
 
-function getMessageHandler(socket, serviceName){
-    return function(cmd){
-        service = serviceData[serviceName];
-        if(service['readCommands'].indexOf(cmd) >= 0){
-            serviceData[serviceName]['datawaiters'].push(socket);
-        }
-        service['connection'].write(msgStart + cmd);
-    };
-}
+exports.handleRequest = function(service, cmd, callback){
+    console.log("REQUEST: "+service+"::'"+cmd+"'");
+    expectRead = serviceData[service]['readCommands'].indexOf(cmd.split("::")[0]) >= 0;
+    if(expectRead) serviceData[service]['datawaiters'].push(callback);
+    serviceData[service]['connection'].write(msgStart + cmd.split("::").join(""));
+    if(!expectRead) callback({});
+};
 
 function initConnection(io, ip, port, serviceName){
     socket = new net.Socket();
@@ -47,19 +34,19 @@ function initConnection(io, ip, port, serviceName){
        console.log('Connected to server on '+ip+':'+port+' (service '+serviceName+')'); 
     });
     socket.on('data', function(data){
-        messages = data.toString('utf-8').split(msgStart);
-        for(var index in messages){
-            message = messages[index];
-            if(isJSONString(message)){
-                message = JSON.parse(message);
-            }
-            
-            if(message.length != 0){
+        var values = data.toString('utf-8').split(msgStart);
+        for(var i = 0; i<values.length; i++){
+            if(i > 0) buffers[serviceName] = "";
+            var d = values[i];
+            buffers[serviceName] = buffers[serviceName] + d;
+            if(isJSONString(buffers[serviceName])){
                 if(serviceData[serviceName]['datawaiters'].length > 0){
-                    serviceData[serviceName]['datawaiters'].shift().emit(serviceData[serviceName]['trigger']+'data', message);
-                }else{
-                    io.emit(serviceData[serviceName]['trigger']+'data', message);
+                    var callback = serviceData[serviceName]['datawaiters'].shift();
+                    if(typeof callback == "function"){
+                        callback(JSON.parse(buffers[serviceName]));
+                    }
                 }
+                buffers[serviceName] = "";
             }
         }
     });
